@@ -1,0 +1,94 @@
+problem heatXfer
+  result finDiffRes
+    parameter x=0:50
+    parameter y=0:50
+    parameter z=0:50
+    parameter t=0:10
+
+    output A[x][y][z][t]
+
+  end result
+
+  codelet finDiff
+    parameter x=1:49
+    parameter y=1:49
+    parameter z=1:49
+    parameter t=1:10
+
+    depends-on A[x][y][z][t-1]
+    depends-on A[x-1][y][z][t-1]
+    depends-on A[x+1][y][z][t-1]
+    depends-on A[x][y-1][z][t-1]
+    depends-on A[x][y+1][z][t-1]
+    depends-on A[x][y][z-1][t-1]
+    depends-on A[x][y][z+1][t-1]
+
+    output A[x][y][z][t]
+
+    code 
+      def update(c,d,u,l,r,b,f):
+        return c + 1.0/8 * (d + u + l + r + b + f - 6 * c)
+    end code
+  end codelet
+
+  codelet tBound
+    parameter x=1:50
+    parameter y=0:50
+    parameter z=0:50
+    parameter t=0
+
+    output A[x][y][z][t]
+
+    code def update(): return 0.0
+    end code
+  end codelet
+
+  codelet xBoundCold
+    parameter x=50
+    parameter y=0:50
+    parameter z=0:50
+    parameter t=0:10
+
+    output A[x][y][z][t]
+
+    code def update(): return 0.0
+    end code
+  end codelet
+
+  codelet xBoundHot
+    parameter x=0
+    parameter y=0:50
+    parameter z=0:50
+    parameter t=0:10
+
+    output A[x][y][z][t]
+
+    code def update(): return 1024.0
+    end code
+  end codelet
+
+  codelet yBound
+    parameter x=1:50
+    parameter y=0,50
+    parameter z=0:50
+    parameter t=0:10
+
+    output A[x][y][z][t]
+
+    code def update(): return 0.0
+    end code
+  end codelet
+
+  codelet zBound
+    parameter x=0:50
+    parameter y=0:50
+    parameter z=0,50
+    parameter t=0:10
+
+    output A[x][y][z][t]
+
+    code def update(): return 0.0
+    end code
+  end codelet
+
+end problem

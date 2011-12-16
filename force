@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+
+from rcdata import RCDHT
+from rcdata import RCLHT
+from rcdata import RCVoldemort
+from rcparser import RCParser
+from rcsolver import RCSolver
+from rcproblem import RCProblem
+import sys
+
+if __name__ == "__main__":
+
+  dht = RCVoldemort(sys.argv[1])
+  parser = RCParser()
+  problem = parser.parse(sys.argv[2])
+  solver = RCSolver()
+  solver.solveProblem(problem, dht)
+

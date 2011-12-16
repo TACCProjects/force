@@ -1,0 +1,11 @@
+problem UpperCase
+  result UpCase
+    parameter x=1:99
+
+    depends-on L[x]
+
+    output U[x]
+
+    code update(l): toupper(l)
+  end result
+end problem

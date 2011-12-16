@@ -1,0 +1,1545 @@
+problem lbm2D
+  result LBMRes
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=50
+
+    output phi[x][y][t]
+
+  end result
+
+  codelet initPhi
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Rb
+    depends-on "x"
+    depends-on xb
+    depends-on "y"
+    depends-on yb
+    depends-on phiStar
+    depends-on IntWidth
+
+    output phi[x][y][t]
+
+    code def update(Rb,x,xb,y,yb,phiStar,IntWidth): return  phiStar*math.tanh( 2.0*( Rb - math.sqrt( (x-xb)*(x-xb) + (y-yb)*(y-yb) ) )/IntWidth )
+  end codelet
+
+  codelet updatePhi
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on f[x][y][0][t-1]
+    depends-on f[x][y][1][t-1] 
+    depends-on f[x][y][2][t-1]
+    depends-on f[x][y][3][t-1]
+    depends-on f[x][y][4][t-1]
+
+    output phi[x][y][t]
+    
+    code def update(f0,f1,f2,f3,f4): return (f0 + f1 + f2 + f3 + f4)
+  end codelet
+
+  codelet init Rho
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on rhoStar
+
+    output rho[x][y][t]
+
+    code def update(rhoStar): return rhoStar
+  end codelet
+
+  codelet updateRho
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on g[x][y][0][t-1]
+    depends-on g[x][y][1][t-1]
+    depends-on g[x][y][2][t-1]
+    depends-on g[x][y][3][t-1]
+    depends-on g[x][y][4][t-1]
+    depends-on g[x][y][5][t-1]
+    depends-on g[x][y][6][t-1]
+    depends-on g[x][y][7][t-1]
+    depends-on g[x][y][8][t-1]
+
+    output rho[x][y][t]
+
+    code def update(g0,g1,g2,g3,g4,g5,g6,g7,g8): return (g0 + g1 + g2 + g3 + g4 + g5 + g6 + g7 + g8)
+  end codelet
+
+  codelet gradPhiX_W
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[50][y][t]
+    depends-on phi[1][y][t]
+    depends-on phi[50][y-1][t]
+    depends-on phi[50][y+1][t]
+    depends-on phi[1][y-1][t]
+    depends-on phi[1][y+1][t]
+
+    output gradPhiX[0][y][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiX_NW
+    parameter t=0:50
+
+    depends-on phi[50][50][t]
+    depends-on phi[1][50][t]
+    depends-on phi[50][49][t]
+    depends-on phi[50][0][t]
+    depends-on phi[1][49][t]
+    depends-on phi[1][0][t]
+
+    output gradPhiX[0][50][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiX_SW
+    parameter t=0:50
+
+    depends-on phi[50][0][t]
+    depends-on phi[1][0][t]
+    depends-on phi[50][50][t]
+    depends-on phi[50][1][t]
+    depends-on phi[1][50][t]
+    depends-on phi[1][1][t]
+
+    output gradPhiX[0][0][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiX_E
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[49][y][t]
+    depends-on phi[0][y][t]
+    depends-on phi[49][y-1][t]
+    depends-on phi[49][y+1][t]
+    depends-on phi[0][y-1][t]
+    depends-on phi[0][y+1][t]
+
+    output gradPhiX[50][y][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiX_NE
+    parameter t=0:50
+
+    depends-on phi[49][50][t]
+    depends-on phi[0][50][t]
+    depends-on phi[49][49][t]
+    depends-on phi[49][0][t]
+    depends-on phi[0][49][t]
+    depends-on phi[0][0][t]
+
+    output gradPhiX[50][50][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiX_SE
+    parameter t=0:50
+
+    depends-on phi[49][0][t]
+    depends-on phi[0][0][t]
+    depends-on phi[49][50][t]
+    depends-on phi[49][1][t]
+    depends-on phi[0][50][t]
+    depends-on phi[0][1][t]
+
+    output gradPhiX[50][0][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiX_N
+    parameter x=1:49
+    parameter t=0:50
+
+    depends-on phi[x-1][50][t]
+    depends-on phi[x+1][50][t]
+    depends-on phi[x-1][49][t]
+    depends-on phi[x-1][0][t]
+    depends-on phi[x+1][49][t]
+    depends-on phi[x+1][0][t]
+
+    output gradPhiX[x][50][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiX_S
+    parameter x=1:49
+    parameter t=0:50
+
+    depends-on phi[x-1][0][t]
+    depends-on phi[x+1][0][t]
+    depends-on phi[x-1][50][t]
+    depends-on phi[x-1][1][t]
+    depends-on phi[x+1][50][t]
+    depends-on phi[x+1][1][t]
+
+    output gradPhiX[x][0][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiX
+    parameter x=1:49
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[x-1][y][t]
+    depends-on phi[x+1][y][t]
+    depends-on phi[x-1][y-1][t]
+    depends-on phi[x-1][y+1][t]
+    depends-on phi[x+1][y-1][t]
+    depends-on phi[x+1][y+1][t]
+
+    output gradPhiX[x][y][t]
+
+    code def update(w,e,ws,wn,es,en): return ( 4.0*( e - w ) + en - ws + es - wn )/12.0
+  end codelet
+
+  codelet gradPhiY_S
+    parameter x=1:49
+    parameter t=0:50
+
+    depends-on phi[x][50][t]
+    depends-on phi[x][1][t]
+    depends-on phi[x-1][50][t]
+    depends-on phi[x-1][1][t]
+    depends-on phi[x+1][50][t]
+    depends-on phi[x+1][1][t]
+
+    output gradPhiY[x][0][t]
+
+    code def update(s,n,ws,wn,es,en): return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+  end codelet
+
+  codelet gradPhiY_SW
+    parameter t=0:50
+
+    depends-on phi[0][50][t]
+    depends-on phi[0][1][t]
+    depends-on phi[50][50][t]
+    depends-on phi[50][1][t]
+    depends-on phi[1][50][t]
+    depends-on phi[1][1][t]
+
+    output gradPhiY[0][0][t]
+
+    code def update(s,n,ws,wn,es,en): return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+  end codelet
+
+  codelet gradPhiY_SE
+    parameter t=0:50
+
+    depends-on phi[50][50][t]
+    depends-on phi[50][1][t]
+    depends-on phi[49][50][t]
+    depends-on phi[49][1][t]
+    depends-on phi[0][50][t]
+    depends-on phi[0][1][t]
+
+    output gradPhiY[50][0][t]
+
+    code def update(s,n,ws,wn,es,en): return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+  end codelet
+
+  codelet gradPhiY_N
+    parameter x=1:49
+    parameter t=0:50
+
+    depends-on phi[x][49][t]
+    depends-on phi[x][0][t]
+    depends-on phi[x-1][49][t]
+    depends-on phi[x-1][0][t]
+    depends-on phi[x+1][49][t]
+    depends-on phi[x+1][0][t]
+
+    output gradPhiY[x][50][t]
+
+    code def update(s,n,ws,wn,es,en): return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+  end codelet
+
+  codelet gradPhiY_NW
+    parameter t=0:50
+
+    depends-on phi[0][49][t]
+    depends-on phi[0][0][t]
+    depends-on phi[50][49][t]
+    depends-on phi[50][0][t]
+    depends-on phi[1][49][t]
+    depends-on phi[1][0][t]
+
+    output gradPhiY[0][50][t]
+
+    code def update(s,n,ws,wn,es,en): return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+  end codelet
+
+  codelet gradPhiY_NE
+    parameter t=0:50
+
+    depends-on phi[50][49][t]
+    depends-on phi[50][0][t]
+    depends-on phi[49][49][t]
+    depends-on phi[49][0][t]
+    depends-on phi[0][49][t]
+    depends-on phi[0][0][t]
+
+    output gradPhiY[50][50][t]
+
+    code def update(s,n,ws,wn,es,en): return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+  end codelet
+
+ codelet gradPhiY_W
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[0][y-1][t]
+    depends-on phi[0][y+1][t]
+    depends-on phi[50][y-1][t]
+    depends-on phi[50][y+1][t]
+    depends-on phi[1][y-1][t]
+    depends-on phi[1][y+1][t]
+
+    output gradPhiY[0][y][t]
+
+    code
+      def update(s,n,ws,wn,es,en): 
+        return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+    end code
+  end codelet
+
+ codelet gradPhiY_E
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[50][y-1][t]
+    depends-on phi[50][y+1][t]
+    depends-on phi[49][y-1][t]
+    depends-on phi[49][y+1][t]
+    depends-on phi[0][y-1][t]
+    depends-on phi[0][y+1][t]
+
+    output gradPhiY[50][y][t]
+
+    code 
+      def update(s,n,ws,wn,es,en): 
+        return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+    end code
+  end codelet
+
+  codelet gradPhiY
+    parameter x=1:49
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[x][y-1][t]
+    depends-on phi[x][y+1][t]
+    depends-on phi[x-1][y-1][t]
+    depends-on phi[x-1][y+1][t]
+    depends-on phi[x+1][y-1][t]
+    depends-on phi[x+1][y+1][t]
+
+    output gradPhiY[x][y][t]
+
+    code def update(s,n,ws,wn,es,en): return ( 4.0*( n - s ) + en - ws - es + wn )/12.0
+  end codelet
+
+  codelet lapPhi_West
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[0][y][t]
+    depends-on phi[50][y][t]
+    depends-on phi[1][y][t]
+    depends-on phi[0][y-1][t]
+    depends-on phi[0][y+1][t]
+    depends-on phi[50][y-1][t]
+    depends-on phi[50][y+1][t]
+    depends-on phi[1][y-1][t]
+    depends-on phi[1][y+1][t]
+
+    output lapPhi[0][y][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet lapPhi_E
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[50][y][t]
+    depends-on phi[49][y][t]
+    depends-on phi[0][y][t]
+    depends-on phi[50][y-1][t]
+    depends-on phi[50][y+1][t]
+    depends-on phi[49][y-1][t]
+    depends-on phi[49][y+1][t]
+    depends-on phi[0][y-1][t]
+    depends-on phi[0][y+1][t]
+
+    output lapPhi[50][y][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet lapPhi_S
+    parameter x=1:49
+    parameter t=0:50
+
+    depends-on phi[x][0][t]
+    depends-on phi[x-1][0][t]
+    depends-on phi[x+1][0][t]
+    depends-on phi[x][50][t]
+    depends-on phi[x][1][t]
+    depends-on phi[x-1][50][t]
+    depends-on phi[x-1][1][t]
+    depends-on phi[x+1][50][t]
+    depends-on phi[x+1][1][t]
+
+    output lapPhi[x][0][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet lapPhi_N
+    parameter x=1:49
+    parameter t=0:50
+
+    depends-on phi[x][50][t]
+    depends-on phi[x-1][50][t]
+    depends-on phi[x+1][50][t]
+    depends-on phi[x][49][t]
+    depends-on phi[x][0][t]
+    depends-on phi[x-1][49][t]
+    depends-on phi[x-1][0][t]
+    depends-on phi[x+1][49][t]
+    depends-on phi[x+1][0][t]
+
+    output lapPhi[x][50][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet lapPhi_NW
+    parameter t=0:50
+
+    depends-on phi[0][50][t]
+    depends-on phi[50][50][t]
+    depends-on phi[1][50][t]
+    depends-on phi[0][49][t]
+    depends-on phi[0][0][t]
+    depends-on phi[50][49][t]
+    depends-on phi[50][0][t]
+    depends-on phi[1][49][t]
+    depends-on phi[1][0][t]
+
+    output lapPhi[0][50][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet lapPhi_SW
+    parameter t=0:50
+
+    depends-on phi[0][0][t]
+    depends-on phi[50][0][t]
+    depends-on phi[1][0][t]
+    depends-on phi[0][50][t]
+    depends-on phi[0][1][t]
+    depends-on phi[50][50][t]
+    depends-on phi[50][1][t]
+    depends-on phi[1][50][t]
+    depends-on phi[1][1][t]
+
+    output lapPhi[0][0][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet lapPhi_NE
+    parameter t=0:50
+
+    depends-on phi[50][50][t]
+    depends-on phi[49][50][t]
+    depends-on phi[0][50][t]
+    depends-on phi[50][49][t]
+    depends-on phi[50][0][t]
+    depends-on phi[49][49][t]
+    depends-on phi[49][0][t]
+    depends-on phi[0][49][t]
+    depends-on phi[0][0][t]
+
+    output lapPhi[50][50][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet lapPhi_SE
+    parameter t=0:50
+
+    depends-on phi[50][0][t]
+    depends-on phi[49][0][t]
+    depends-on phi[0][0][t]
+    depends-on phi[50][50][t]
+    depends-on phi[50][1][t]
+    depends-on phi[49][50][t]
+    depends-on phi[49][1][t]
+    depends-on phi[0][50][t]
+    depends-on phi[0][1][t]
+
+    output lapPhi[50][0][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet lapPhi
+    parameter x=1:49
+    parameter y=1:49
+    parameter t=0:50
+
+    depends-on phi[x][y][t]
+    depends-on phi[x-1][y][t]
+    depends-on phi[x+1][y][t]
+    depends-on phi[x][y-1][t]
+    depends-on phi[x][y+1][t]
+    depends-on phi[x-1][y-1][t]
+    depends-on phi[x-1][y+1][t]
+    depends-on phi[x+1][y-1][t]
+    depends-on phi[x+1][y+1][t]
+
+    output lapPhi[x][y][t]
+
+    code def update(c,w,e,s,n,ws,wn,es,en): return ( en + es + wn + ws + 4.0*( e + w + n + s ) -20.0*c  )
+  end codelet
+
+  codelet muPhi
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0:50
+
+    depends-on alpha4
+    depends-on phiStar
+    depends-on kappa_6
+    depends-on phi[x][y][t]
+    depends-on lapPhi[x][y][t]
+
+    output muPhi[x][y][t]
+
+    code def update(alpha4,phiStar,kappa_6,phin,lapPhin): return ( alpha4*phin*( phin*phin - phiStar*phiStar ) - kappa_6*lapPhin )
+  end codelet
+
+  codelet Fx
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0:50
+
+    depends-on gradPhiX[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output Fx[x][y][t]
+
+    code def update(gx,muPhin): return ( gx*muPhin )
+  end codelet
+
+  codelet Fy
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0:50
+
+    depends-on invPhiStar
+    depends-on grav
+    depends-on gradPhiY[x][y][t]
+    depends-on muPhi[x][y][t]
+    depends-on phi[x][y][t]
+
+    output Fy[x][y][t]
+
+    code def update(invPhiStar,grav,gy,muPhin,phin): return ( gy*muPhin + 0.5*phin*invPhiStar*grav )
+  end codelet
+
+  codelet initUx
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    output ux[x][y][t]
+
+    code def update(): return 0.0
+  end codelet
+
+  codelet updateUx
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on g[x][y][1][t-1]
+    depends-on g[x][y][3][t-1]
+    depends-on g[x][y][5][t-1]
+    depends-on g[x][y][6][t-1]
+    depends-on g[x][y][7][t-1]
+    depends-on g[x][y][8][t-1]
+    depends-on Fx[x][y][t]
+    depends-on rho[x][y][t]
+
+    output ux[x][y][t]
+
+    code def update(g1,g3,g5,g6,g7,g8,Fx,rhon): return ( g1 - g3 + g5 - g6 - g7 + g8 +0.5*Fx )/rhon
+  end codelet 
+
+  codelet initUy
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    output uy[x][y][t]
+
+    code def update(): return 0.0
+  end codelet
+
+  codelet updateUy
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on g[x][y][2][t-1]
+    depends-on g[x][y][4][t-1]
+    depends-on g[x][y][5][t-1]
+    depends-on g[x][y][6][t-1]
+    depends-on g[x][y][7][t-1]
+    depends-on g[x][y][8][t-1]
+    depends-on Fy[x][y][t]
+    depends-on rho[x][y][t]
+
+    output uy[x][y][t]
+
+    code def update(g2,g4,g5,g6,g7,g8,Fy,rhon): return ( g2 - g4 + g5 + g6 - g7 - g8 +0.5*Fy )/rhon
+  end codelet
+
+  codelet init_f0
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on gamma
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output f[x][y][0][t]
+
+    code def update(gamma,phin,muPhin): return ( phin - 2.0*gamma*muPhin )
+  end codelet
+
+  codelet collide_f0
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gamma
+    depends-on invTauPhi
+    depends-on f[x][y][0][t-1]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output fcol[x][y][0][t]
+
+    code def update(gamma,invTauPhi,f0,phin,muPhin): return ( f0 + invTauPhi*( phin - 2.0*gamma*muPhin - f0 ))
+  end codelet
+
+  codelet init_f1
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on gamma
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output f[x][y][1][t]
+
+    code def update(gamma,phin,muPhin): return ( 0.5*gamma*muPhin )
+  end codelet
+
+  codelet collide_f1
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gamma
+    depends-on invTauPhi
+    depends-on invEta2
+    depends-on f[x][y][1][t-1]
+    depends-on ux[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output fcol[x][y][1][t]
+
+    code def update(gamma,invTauPhi,invEta2,f1,uxn,phin,muPhin): return f1 + invTauPhi*( invEta2*phin*uxn + 0.5*gamma*muPhin - f1 )
+  end codelet
+
+  codelet init_f2
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on gamma
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output f[x][y][2][t]
+
+    code def update(gamma,phin,muPhin): return ( 0.5*gamma*muPhin )
+  end codelet
+
+  codelet collide_f2
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gamma
+    depends-on invTauPhi
+    depends-on invEta2
+    depends-on f[x][y][2][t-1]
+    depends-on uy[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output fcol[x][y][2][t]
+
+    code def update(gamma,invTauPhi,invEta2,f2,uyn,phin,muPhin): return f2 + invTauPhi*( invEta2*phin*uyn + 0.5*gamma*muPhin - f2 )
+  end codelet
+
+  codelet init_f3
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on gamma
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output f[x][y][3][t]
+
+    code def update(gamma,phin,muPhin): return ( 0.5*gamma*muPhin )
+  end codelet
+
+  codelet collide_f3
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gamma
+    depends-on invTauPhi
+    depends-on invEta2
+    depends-on f[x][y][3][t-1]
+    depends-on ux[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output fcol[x][y][3][t]
+
+    code def update(gamma,invTauPhi,invEta2,f3,uxn,phin,muPhin): return f3 + invTauPhi*( -invEta2*phin*uxn + 0.5*gamma*muPhin - f3 )
+  end codelet
+
+  codelet init_f4
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on gamma
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output f[x][y][4][t]
+
+    code def update(gamma,phin,muPhin): return ( 0.5*gamma*muPhin )
+  end codelet
+
+  codelet collide_f4
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gamma
+    depends-on invTauPhi
+    depends-on invEta2
+    depends-on f[x][y][4][t-1]
+    depends-on uy[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output fcol[x][y][4][t]
+
+    code def update(gamma,invTauPhi,invEta2,f4,uyn,phin,muPhin): return f4 + invTauPhi*( -invEta2*phin*uyn + 0.5*gamma*muPhin - f4 )
+  end codelet
+
+  codelet stream_f0
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on fcol[x][y][0][t]
+
+    output f[x][y][0][t]
+
+    code def update(fcol0): return fcol0
+  end codelet
+
+   codelet stream_f1
+    parameter x=1:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on eta
+    depends-on eta2
+    depends-on fcol[x-1][y][1][t]
+    depends-on fcol[x][y][1][t]
+
+    output f[x][y][1][t]
+
+    code def update(eta,eta2,fcol1,fcol1b): return ( eta*fcol1 + eta2*fcol1b ) 
+  end codelet 
+
+   codelet bc_f1
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on eta
+    depends-on eta2
+    depends-on fcol[50][y][1][t]
+    depends-on fcol[0][y][1][t]
+
+    output f[0][y][1][t]
+
+    code def update(eta,eta2,fcol1,fcol1b): return ( eta*fcol1 + eta2*fcol1b ) 
+  end codelet 
+
+   codelet stream_f2
+    parameter x=0:50
+    parameter y=1:50
+    parameter t=1:50
+
+    depends-on eta
+    depends-on eta2
+    depends-on fcol[x][y-1][2][t]
+    depends-on fcol[x][y][2][t]
+
+    output f[x][y][2][t]
+
+    code def update(eta,eta2,fcol2,fcol2b): return ( eta*fcol2 + eta2*fcol2b ) 
+  end codelet
+
+   codelet bc_f2
+    parameter x=0:50
+    parameter t=1:50
+
+    depends-on eta
+    depends-on eta2
+    depends-on fcol[x][50][2][t]
+    depends-on fcol[x][0][2][t]
+
+    output f[x][0][2][t]
+
+    code def update(eta,eta2,fcol2,fcol2b): return ( eta*fcol2 + eta2*fcol2b ) 
+  end codelet
+
+   codelet stream_f3
+    parameter x=0:49
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on eta
+    depends-on eta2
+    depends-on fcol[x+1][y][3][t]
+    depends-on fcol[x][y][3][t]
+
+    output f[x][y][3][t]
+
+    code def update(eta,eta2,fcol3,fcol3b): return ( eta*fcol3 + eta2*fcol3b ) 
+  end codelet
+
+   codelet bc_f3
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on eta
+    depends-on eta2
+    depends-on fcol[0][y][3][t]
+    depends-on fcol[50][y][3][t]
+
+    output f[50][y][3][t]
+
+    code def update(eta,eta2,fcol3,fcol3b): return ( eta*fcol3 + eta2*fcol3b ) 
+  end codelet
+
+   codelet stream_f4
+    parameter x=0:50
+    parameter y=0:49
+    parameter t=1:50
+
+    depends-on eta
+    depends-on eta2
+    depends-on fcol[x][y+1][4][t]
+    depends-on fcol[x][y][4][t]
+
+    output f[x][y][4][t]
+
+    code def update(eta,eta2,fcol4,fcol4b): return ( eta*fcol4 + eta2*fcol4b ) 
+  end codelet
+
+   codelet bc_f4
+    parameter x=0:50
+    parameter t=1:50
+
+    depends-on eta
+    depends-on eta2
+    depends-on fcol[x][0][4][t]
+    depends-on fcol[x][50][4][t]
+
+    output f[x][50][4][t]
+
+    code def update(eta,eta2,fcol4,fcol4b): return ( eta*fcol4 + eta2*fcol4b ) 
+  end codelet
+
+  codelet init_g0
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg0
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][0][t]
+
+    code def update(Eg0,rhon,phin,muPhin): return ( Eg0*( 2.25*rhon - 1.25*(rhon + 3.0*phin*muPhin ) ) )
+  end codelet
+
+  codelet collide_g0
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg0
+    depends-on Eg0T
+    depends-on invTauRho
+    depends-on g[x][y][0][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][0][t]
+
+    code def update(Eg0,Eg0T,invTauRho,g0,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g0 +invTauRho*( Eg0*( 2.25*rhon - 1.25*(rhon + 3.0*phin*muPhin ) - rhon*0.75*( uxn*uxn + uyn*uyn ) ) - g0 ) - Eg0T*( uxn*Fxn + uyn*Fyn ) )
+  end codelet
+
+  codelet init_g1
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg1
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][1][t]
+
+    code def update(Eg1,rhon,phin,muPhin): return ( Eg1*( rhon + 3.0*phin*muPhin ) )
+  end codelet
+
+  codelet collide_g1
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg1
+    depends-on Eg1C
+    depends-on Eg1T
+    depends-on invTauRho
+    depends-on g[x][y][1][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][1][t]
+
+    code def update(Eg1,Eg1C,Eg1T,invTauRho,g1,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g1 +invTauRho*( Eg1*(rhon + 3.0*phin*muPhin) + Eg1C*rhon*( uxn + 1.5*uxn*uxn - 0.5*( uxn*uxn + uyn*uyn ) ) - g1 ) + Eg1T*( (1.0 + 2.0*uxn)*Fxn - uyn*Fyn ) )
+  end codelet
+
+  codelet init_g2
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg1
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][2][t]
+
+    code def update(Eg1,rhon,phin,muPhin): return ( Eg1*( rhon + 3.0*phin*muPhin ) )
+  end codelet
+
+  codelet collide_g2
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg1
+    depends-on Eg1C
+    depends-on Eg1T
+    depends-on invTauRho
+    depends-on g[x][y][2][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][2][t]
+
+    code def update(Eg1,Eg1C,Eg1T,invTauRho,g2,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g2 +invTauRho*( Eg1*(rhon + 3.0*phin*muPhin) + Eg1C*rhon*( uyn + 1.5*uyn*uyn - 0.5*( uxn*uxn + uyn*uyn ) ) - g2 ) + Eg1T*( -uxn*Fxn + (1.0 + 2.0*uyn)*Fyn ) )
+  end codelet
+
+  codelet init_g3
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg1
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][3][t]
+
+    code def update(Eg1,rhon,phin,muPhin): return ( Eg1*( rhon + 3.0*phin*muPhin ) )
+  end codelet
+
+  codelet collide_g3
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg1
+    depends-on Eg1C
+    depends-on Eg1T
+    depends-on invTauRho
+    depends-on g[x][y][3][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][3][t]
+
+    code def update(Eg1,Eg1C,Eg1T,invTauRho,g3,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g3 +invTauRho*( Eg1*(rhon + 3.0*phin*muPhin) + Eg1C*rhon*( -uxn + 1.5*uxn*uxn - 0.5*( uxn*uxn + uyn*uyn ) ) - g3 ) + Eg1T*( (2.0*uxn - 1.0)*Fxn - uyn*Fyn ) )
+  end codelet
+
+  codelet init_g4
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg1
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][4][t]
+
+    code def update(Eg1,rhon,phin,muPhin): return ( Eg1*( rhon + 3.0*phin*muPhin ) )
+  end codelet
+
+  codelet collide_g4
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg1
+    depends-on Eg1C
+    depends-on Eg1T
+    depends-on invTauRho
+    depends-on g[x][y][4][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][4][t]
+
+    code def update(Eg1,Eg1C,Eg1T,invTauRho,g4,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g4 +invTauRho*( Eg1*(rhon + 3.0*phin*muPhin) + Eg1C*rhon*( -uyn + 1.5*uyn*uyn - 0.5*( uxn*uxn + uyn*uyn ) ) - g4 ) + Eg1T*( -uxn*Fxn + (2.0*uyn - 1.0)*Fyn ) )
+  end codelet
+
+  codelet init_g5
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg1
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][5][t]
+
+    code def update(Eg1,rhon,phin,muPhin): return ( Eg1*( rhon + 3.0*phin*muPhin ) )
+  end codelet
+
+  codelet collide_g5
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg2
+    depends-on Eg2C
+    depends-on Eg2T
+    depends-on invTauRho
+    depends-on g[x][y][5][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][5][t]
+
+    code def update(Eg2,Eg2C,Eg2T,invTauRho,g5,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g5 +invTauRho*( Eg2*(rhon + 3.0*phin*muPhin) + Eg2C*rhon*( uxn + uyn + 1.5*(uxn+uyn)*(uxn+uyn) - 0.5*( uxn*uxn + uyn*uyn ) ) - g5 ) + Eg2T*( ( (1.0 - uxn) + 3.0*(uxn + uyn) )*Fxn + ( (1.0-uyn) + 3.0*(uxn+uyn) )*Fyn ) )
+  end codelet
+
+  codelet init_g6
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg2
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][6][t]
+
+    code def update(Eg2,rhon,phin,muPhin): return ( Eg2*( rhon + 3.0*phin*muPhin ) )
+  end codelet
+
+  codelet collide_g6
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg2
+    depends-on Eg2C
+    depends-on Eg2T
+    depends-on invTauRho
+    depends-on g[x][y][6][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][6][t]
+
+    code def update(Eg2,Eg2C,Eg2T,invTauRho,g6,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g6 +invTauRho*( Eg2*(rhon + 3.0*phin*muPhin) + Eg2C*rhon*( -uxn + uyn + 1.5*(-uxn+uyn)*(-uxn+uyn) - 0.5*( uxn*uxn + uyn*uyn ) ) - g6 ) + Eg2T*( ( (-1.0 - uxn) - 3.0*(-uxn + uyn) )*Fxn + ( (1.0-uyn) + 3.0*(-uxn+uyn) )*Fyn ) )
+  end codelet
+
+  codelet init_g7
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg2
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][7][t]
+
+    code def update(Eg2,rhon,phin,muPhin): return ( Eg2*( rhon + 3.0*phin*muPhin ) )
+  end codelet
+
+  codelet collide_g7
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg2
+    depends-on Eg2C
+    depends-on Eg2T
+    depends-on invTauRho
+    depends-on g[x][y][7][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][7][t]
+
+    code def update(Eg2,Eg2C,Eg2T,invTauRho,g7,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g7 +invTauRho*( Eg2*(rhon + 3.0*phin*muPhin) + Eg2C*rhon*( -uxn - uyn + 1.5*(uxn+uyn)*(uxn+uyn) - 0.5*( uxn*uxn + uyn*uyn ) ) - g7 ) + Eg2T*( ( (-1.0 - uxn) +3.0*(uxn + uyn) )*Fxn + ( (-1.0-uyn) + 3.0*(uxn+uyn) )*Fyn ) )
+  end codelet
+
+  codelet init_g8
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=0
+
+    depends-on Eg2
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output g[x][y][8][t]
+
+    code def update(Eg2,rhon,phin,muPhin): return ( Eg2*( rhon + 3.0*phin*muPhin ) )
+  end codelet
+
+  codelet collide_g8
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on Eg2
+    depends-on Eg2C
+    depends-on Eg2T
+    depends-on invTauRho
+    depends-on g[x][y][8][t-1]
+    depends-on ux[x][y][t]
+    depends-on uy[x][y][t]
+    depends-on rho[x][y][t]
+    depends-on phi[x][y][t]
+    depends-on Fx[x][y][t]
+    depends-on Fy[x][y][t]
+    depends-on muPhi[x][y][t]
+
+    output gcol[x][y][8][t]
+
+    code def update(Eg2,Eg2C,Eg2T,invTauRho,g8,uxn,uyn,rhon,phin,Fxn,Fyn,muPhin): return ( g8 +invTauRho*( Eg2*(rhon + 3.0*phin*muPhin) + Eg2C*rhon*( uxn - uyn + 1.5*(uxn-uyn)*(uxn-uyn) - 0.5*( uxn*uxn + uyn*uyn ) ) - g8 ) + Eg2T*( ( (1.0 - uxn) +3.0*(uxn - uyn) )*Fxn + ( (-1.0-uyn) - 3.0*(uxn-uyn) )*Fyn ) )
+  end codelet
+
+  codelet stream_g0
+    parameter x=0:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gcol[x][y][0][t]
+
+    output g[x][y][0][t]
+
+    code def update(gcol0): return gcol0
+  end codelet
+
+  codelet stream_g1
+    parameter x=1:50
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gcol[x-1][y][1][t]
+
+    output g[x][y][1][t]
+
+    code def update(gcol1): return gcol1
+  end codelet
+
+  codelet bc_g1
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gcol[50][y][1][t]
+
+    output g[0][y][1][t]
+
+    code def update(gcol1): return gcol1
+  end codelet
+
+  codelet stream_g2
+    parameter x=0:50
+    parameter y=1:50
+    parameter t=1:50
+
+    depends-on gcol[x][y-1][2][t]
+
+    output g[x][y][2][t]
+
+    code def update(gcol2): return gcol2
+  end codelet
+
+  codelet bc_g2
+    parameter x=0:50
+    parameter t=1:50
+
+    depends-on gcol[x][50][2][t]
+
+    output g[x][0][2][t]
+
+    code def update(gcol2): return gcol2
+  end codelet
+
+  codelet stream_g3
+    parameter x=0:49
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gcol[x+1][y][3][t]
+
+    output g[x][y][3][t]
+
+    code def update(gcol3): return gcol3
+  end codelet
+
+  codelet bc_g3
+    parameter y=0:50
+    parameter t=1:50
+
+    depends-on gcol[0][y][3][t]
+
+    output g[50][y][3][t]
+
+    code def update(gcol3): return gcol3
+  end codelet
+
+  codelet stream_g4
+    parameter x=0:50
+    parameter y=0:49
+    parameter t=1:50
+
+    depends-on gcol[x][y+1][4][t]
+
+    output g[x][y][4][t]
+
+    code def update(gcol4): return gcol4
+  end codelet
+
+  codelet bc_g4
+    parameter x=0:50
+    parameter t=1:50
+
+    depends-on gcol[x][0][4][t]
+
+    output g[x][50][4][t]
+
+    code def update(gcol4): return gcol4
+  end codelet
+
+  codelet stream_g5
+    parameter x=1:50
+    parameter y=1:50
+    parameter t=1:50
+
+    depends-on gcol[x-1][y-1][5][t]
+
+    output g[x][y][5][t]
+
+    code def update(gcol5): return gcol5
+  end codelet
+
+  codelet bc_g5a
+    parameter y=1:50
+    parameter t=1:50
+
+    depends-on gcol[50][y-1][5][t]
+
+    output g[0][y][5][t]
+
+    code def update(gcol5): return gcol5
+  end codelet
+
+  codelet bc_g5b
+    parameter x=1:50
+    parameter t=1:50
+
+    depends-on gcol[x-1][50][5][t]
+
+    output g[x][0][5][t]
+
+    code def update(gcol5): return gcol5
+  end codelet
+
+  codelet bc_g5c
+    parameter t=1:50
+
+    depends-on gcol[50][50][5][t]
+
+    output g[0][0][5][t]
+
+    code def update(gcol5): return gcol5
+  end codelet
+
+  codelet stream_g6
+    parameter x=0:49
+    parameter y=1:50
+    parameter t=1:50
+
+    depends-on gcol[x+1][y-1][6][t]
+
+    output g[x][y][6][t]
+
+    code def update(gcol6): return gcol6
+  end codelet
+
+  codelet bc_g6a
+    parameter y=1:50
+    parameter t=1:50
+
+    depends-on gcol[0][y-1][6][t]
+
+    output g[50][y][6][t]
+
+    code def update(gcol6): return gcol6
+  end codelet
+
+  codelet bc_g6b
+    parameter x=0:49
+    parameter t=1:50
+
+    depends-on gcol[x+1][50][6][t]
+
+    output g[x][0][6][t]
+
+    code def update(gcol6): return gcol6
+  end codelet
+
+  codelet bc_g6c
+    parameter t=1:50
+
+    depends-on gcol[0][50][6][t]
+
+    output g[50][0][6][t]
+
+    code def update(gcol6): return gcol6
+  end codelet
+
+  codelet stream_g7
+    parameter x=0:49
+    parameter y=0:49
+    parameter t=1:50
+
+    depends-on gcol[x+1][y+1][7][t]
+
+    output g[x][y][7][t]
+
+    code def update(gcol7): return gcol7
+  end codelet
+
+  codelet bc_g7a
+    parameter y=0:49
+    parameter t=1:50
+
+    depends-on gcol[0][y+1][7][t]
+
+    output g[50][y][7][t]
+
+    code def update(gcol7): return gcol7
+  end codelet
+
+  codelet bc_g7b
+    parameter x=0:49
+    parameter t=1:50
+
+    depends-on gcol[x+1][0][7][t]
+
+    output g[x][50][7][t]
+
+    code def update(gcol7): return gcol7
+  end codelet
+
+  codelet bc_g7c
+    parameter t=1:50
+
+    depends-on gcol[0][0][7][t]
+
+    output g[50][50][7][t]
+
+    code def update(gcol7): return gcol7
+  end codelet
+
+  codelet stream_g8
+    parameter x=1:50
+    parameter y=0:49
+    parameter t=1:50
+
+    depends-on gcol[x-1][y+1][8][t]
+
+    output g[x][y][8][t]
+
+    code def update(gcol8): return gcol8
+  end codelet
+
+  codelet bc_g8a
+    parameter y=0:49
+    parameter t=1:50
+
+    depends-on gcol[50][y+1][8][t]
+
+    output g[0][y][8][t]
+
+    code def update(gcol8): return gcol8
+  end codelet
+
+  codelet bc_g8b
+    parameter x=1:50
+    parameter t=1:50
+
+    depends-on gcol[x-1][0][8][t]
+
+    output g[x][50][8][t]
+
+    code def update(gcol8): return gcol8
+  end codelet
+
+  codelet bc_g8c
+    parameter t=1:50
+
+    depends-on gcol[50][0][8][t]
+
+    output g[0][50][8][t]
+
+    code def update(gcol8): return gcol8
+  end codelet
+
+  data lbmParams.dat
+
+end problem
